@@ -1,0 +1,11 @@
+{
+    "name": "Jitemans-channeled-wireless-signals",
+    "version": "1.0.0",
+    "title": "Jiteman's channeled wireless signals",
+    "author": "Jiteman [@gmail.com]",
+    "contact": "",
+    "homepage": "",
+    "factorio_version": "0.16",
+    "dependencies": [ "base" ],
+    "description": "Global range signal transmitter and receiver with selectable radio transmittion channels. Both transmitter and receiver are highly optimized in terms of CPU usage."
+}
