@@ -1,20 +1,22 @@
-require( "entity-processing/channel-table-processing" )
-require( "entity-processing/receiver-table-processing" )
-require( "entity-processing/transmitter-table-processing" )
-require( "entity-processing/signal-processing" )
+require( "control-processing/channel-table-processing" )
+require( "control-processing/entity-table-processing" )
+require( "control-processing/receiver-table-processing" )
+require( "control-processing/transmitter-table-processing" )
+require( "control-processing/signal-processing" )
 
 require( "utilities/debugging" )
 
 -- formats:
---		transmitters:
+--		transmitters: (unit_number)
 --			entity
---			channel_number
---		receivers:
+--			channel_identifier
+--		receivers: (unit_number)
 --			entity
---			channel_number
---		channels:
+--			channel_identifier
+--		channels: (channel_identifier)
 --			name
 --			transmitters
+--			receivers
 local function initGlobal( force )
 	if force or global.jitemans_channeled_wireless_signals == nil then
 		global.jitemans_channeled_wireless_signals = {}
@@ -51,43 +53,51 @@ local cachedSignal = {
 }
 
 local function onEntityCreated( event )
-	local entity = event.created_entity
+	local the_entity = event.created_entity
 	
-	if ( entity.name == "jitemans-channeled-signal-transmitter" ) then
-		entity.operable = false
-		entity.get_or_create_control_behavior().connect_to_logistic_network = false
-		entity.get_control_behavior().circuit_condition = cachedSignal
+	if ( the_entity.name == "jitemans-channeled-signal-transmitter" ) then
+		the_entity.operable = false
+		the_entity.get_or_create_control_behavior().connect_to_logistic_network = false
+		the_entity.get_control_behavior().circuit_condition = cachedSignal
 		
 		local new_transmitter = {
-			entity = entity,
-			channel_number = 0
+			entity = the_entity,
+			channel_identifier = 0
 		}
 		
-		table.insert(
-			global.jitemans_channeled_wireless_signals.transmitters,
-			new_transmitter
-		)
+		Add_transmitter_to_transmitter_table( new_transmitter );
+		Add_transmitter_to_channel_table( new_transmitter );
 		
-		global.jitemans_channeled_wireless_signals.channels[ 0 ] = {
-			name = "Default channel",
-			transmitters = { new_transmitter }
-		}
+		--	global.jitemans_channeled_wireless_signals.channels[ 0 ] = {
+		--		name = "Default channel",
+		--		transmitters = { new_transmitter }
+		--	}
 	elseif ( entity.name == "jitemans-channeled-signal-receiver" ) then
-		entity.operable = false
+		the_entity.operable = false
+		
+		local new_receiver = {
+			entity = the_entity,
+			channel_identifier = 0
+		}		
 		
 		table.insert(
 			global.jitemans_channeled_wireless_signals.receivers,
-			{
-				entity = entity,
-				channel_number = 0
-			}
+			new_receiver
 		)
+		
+		Add_receiver_to_channel_table( new_receiver );
 	end
 end
 
 -- update channel table
 local function onEntityRemoved( event )
 	local entity = event.entity
+	
+	if ( entity.name == "jitemans-channeled-signal-transmitter" ) then
+		Remove_transmitter_from_transmitter_table_by_unit_number( entity.unit_number )
+	elseif ( entity.name == "jitemans-channeled-signal-receiver" ) then
+		Remove_receiver_from_receiver_table_by_unit_number( entity.unit_number )
+	end
 	
 	if ( entity.name == "jitemans-channeled-signal-transmitter" ) then
 		for i = 1, #global.jitemans_channeled_wireless_signals.transmitters do
@@ -111,14 +121,14 @@ local function onTick( event )
 	local signal_tables = {}
 	
 	for _, each_receiver in pairs( channeled_wireless_signals.receivers ) do
-		local channel_number = each_receiver.channel_number
+		local channel_identifier = each_receiver.channel_identifier
 		
-		if ( signal_tables == nil or signal_tables[ channel_number ] == nil ) then
+		if ( signal_tables == nil or signal_tables[ channel_identifier ] == nil ) then
 			local current_channel_signal_table = {}
 			
-			if ( channeled_wireless_signals.channels ~= nil and channeled_wireless_signals.channels[ channel_number ] ~= nil ) then
-				if ( channeled_wireless_signals.channels[ channel_number ].transmitters ~= nil ) then
-					for _, each_transmitter in pairs( channeled_wireless_signals.channels[ channel_number ].transmitters ) do
+			if ( channeled_wireless_signals.channels ~= nil and channeled_wireless_signals.channels[ channel_identifier ] ~= nil ) then
+				if ( channeled_wireless_signals.channels[ channel_identifier ].transmitters ~= nil ) then
+					for _, each_transmitter in pairs( channeled_wireless_signals.channels[ channel_identifier ].transmitters ) do
 						if ( each_transmitter.entity.energy > 0 ) then
 							Get_transmitter_signals( current_channel_signal_table, each_transmitter )
 						end
@@ -128,12 +138,12 @@ local function onTick( event )
 
 			if ( #current_channel_signal_table ~= 0 ) then
 				Merge_signals( current_channel_signal_table )
-				signal_tables[ channel_number ] = current_channel_signal_table
+				signal_tables[ channel_identifier ] = current_channel_signal_table
 			end
 		end
 
-		if ( signal_tables[ channel_number ] ~= nil and #signal_tables[ channel_number ] ~= 0 ) then
-			each_receiver.entity.get_control_behavior().parameters = { parameters = signal_tables[ channel_number ] }
+		if ( signal_tables[ channel_identifier ] ~= nil and #signal_tables[ channel_identifier ] ~= 0 ) then
+			each_receiver.entity.get_control_behavior().parameters = { parameters = signal_tables[ channel_identifier ] }
 		end
 	end
 end
