@@ -8,7 +8,7 @@ function Add_transmitter_to_channel_table( the_transmitter )
 		-- create new channel
 		global.jitemans_channeled_wireless_signals.channels[ the_transmitter.channel_identifier ] = {
 			name = "[No name]",
-			transmitters = { new_transmitter },
+			transmitters = { the_transmitter },
 			receivers = {}
 		}
 	end
@@ -23,7 +23,7 @@ function Add_receiver_to_channel_table( the_receiver )
 			the_receiver
 		)		
 	else
-		-- create new
+		-- create new channel
 		global.jitemans_channeled_wireless_signals.channels[ the_receiver.channel_identifier ] = {
 			name = "[No name]",
 			transmitters = {},
@@ -43,7 +43,7 @@ function Remove_transmitter_from_channel_table( the_transmitter )
 		-- create new channel
 		global.jitemans_channeled_wireless_signals.channels[ the_transmitter.channel_identifier ] = {
 			name = "[No name]",
-			transmitters = { new_transmitter },
+			transmitters = { the_transmitter },
 			receivers = {}
 		}
 	end
