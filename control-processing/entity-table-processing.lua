@@ -7,7 +7,9 @@ function Add_receiver_to_receiver_table( new_receiver )
 end
 
 function Remove_transmitter_from_transmitter_table( the_transmitter )
+	global.jitemans_channeled_wireless_signals.transmitters[ the_transmitter.unit_number ] = nil
 end
 
 function Remove_receiver_from_receiver_table( the_receiver )
+	global.jitemans_channeled_wireless_signals.receivers[ the_receiver.unit_number ] = nil
 end
