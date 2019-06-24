@@ -13,9 +13,9 @@ require( "utilities/debugging" )
 --			entity
 --			channel_identifier
 --		channels: (channel_identifier)
---			name
 --			transmitters
---			receivers
+--			name
+
 local function initGlobal( force )
 	if force or global.jitemans_channeled_wireless_signals == nil then
 		global.jitemans_channeled_wireless_signals = {}
@@ -84,7 +84,8 @@ local function onEntityRemoved( event )
 	local entity = event.entity
 	
 	if ( entity.name == "jitemans-channeled-signal-transmitter" ) then
-		Remove_transmitter_from_transmitter_table( entity )
+		local the_transmitter = Remove_and_get_transmitter_from_transmitter_table( entity )
+		Remove_transmitter_from_channel_table( the_transmitter )
 	elseif ( entity.name == "jitemans-channeled-signal-receiver" ) then
 		Remove_receiver_from_receiver_table( entity )
 	end
@@ -102,7 +103,7 @@ local function onTick( event )
 			local current_channel_signal_table = {}
 			
 			if ( channeled_wireless_signals.channels ~= nil and channeled_wireless_signals.channels[ channel_identifier ] ~= nil ) then
-				if ( channeled_wireless_signals.channels[ channel_identifier ].transmitters ~= nil and #channeled_wireless_signals.channels[ channel_identifier ].transmitters ~= 0 ) then
+				if ( channeled_wireless_signals.channels[ channel_identifier ].transmitters ~= nil ) then
 					for _, each_transmitter in pairs( channeled_wireless_signals.channels[ channel_identifier ].transmitters ) do
 						if ( each_transmitter.entity.energy > 0 ) then
 							Get_transmitter_signals( current_channel_signal_table, each_transmitter )
@@ -120,6 +121,8 @@ local function onTick( event )
 		-- copy collected signals into receiver signals (parameters)
 		if ( signal_tables[ channel_identifier ] ~= nil and #signal_tables[ channel_identifier ] ~= 0 ) then
 			each_receiver.entity.get_control_behavior().parameters = { parameters = signal_tables[ channel_identifier ] }
+		else
+			each_receiver.entity.get_control_behavior().parameters = { parameters = {} }
 		end
 	end
 end
