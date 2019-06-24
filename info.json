@@ -7,5 +7,5 @@
     "homepage": "",
     "factorio_version": "0.16",
     "dependencies": [ "base" ],
-    "description": "Global range signal transmitter and receiver with selectable radio transmittion channels. Both transmitter and receiver are highly optimized in terms of CPU usage."
+    "description": "Global range signal transmitter and receiver with selectable radio transmission channels. Both transmitter and receiver are highly optimized in terms of CPU usage."
 }
