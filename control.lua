@@ -76,7 +76,6 @@ local function onEntityCreated( event )
 		}		
 		
 		Add_receiver_to_receiver_table( new_receiver )
-		Add_receiver_to_channel_table( new_receiver )
 	end
 end
 
@@ -85,25 +84,9 @@ local function onEntityRemoved( event )
 	local entity = event.entity
 	
 	if ( entity.name == "jitemans-channeled-signal-transmitter" ) then
-		Remove_transmitter_from_transmitter_table_by_unit_number( entity.unit_number )
+		Remove_transmitter_from_transmitter_table( entity )
 	elseif ( entity.name == "jitemans-channeled-signal-receiver" ) then
-		Remove_receiver_from_receiver_table_by_unit_number( entity.unit_number )
-	end
-	
-	if ( entity.name == "jitemans-channeled-signal-transmitter" ) then
-		for i = 1, #global.jitemans_channeled_wireless_signals.transmitters do
-			if entity == global.jitemans_channeled_wireless_signals.transmitters[ i ].transmitter then
-				table.remove( global.jitemans_channeled_wireless_signals.transmitters, i )
-				return
-			end
-		end
-	elseif ( entity.name == "jitemans-channeled-signal-receiver" ) then
-		for i = 1, #global.jitemans_channeled_wireless_signals.receivers do
-			if entity == global.jitemans_channeled_wireless_signals.receivers[ i ].receiver then
-				table.remove( global.jitemans_channeled_wireless_signals.receivers, i )
-				return
-			end
-		end
+		Remove_receiver_from_receiver_table( entity )
 	end
 end
 
