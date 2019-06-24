@@ -97,11 +97,12 @@ local function onTick( event )
 	for _, each_receiver in pairs( channeled_wireless_signals.receivers ) do
 		local channel_identifier = each_receiver.channel_identifier
 		
+		-- skip this if signals for this channel is already collected (use previously collected signals for this channel)
 		if ( signal_tables == nil or signal_tables[ channel_identifier ] == nil ) then
 			local current_channel_signal_table = {}
 			
 			if ( channeled_wireless_signals.channels ~= nil and channeled_wireless_signals.channels[ channel_identifier ] ~= nil ) then
-				if ( channeled_wireless_signals.channels[ channel_identifier ].transmitters ~= nil ) then
+				if ( channeled_wireless_signals.channels[ channel_identifier ].transmitters ~= nil and #channeled_wireless_signals.channels[ channel_identifier ].transmitters ~= 0 ) then
 					for _, each_transmitter in pairs( channeled_wireless_signals.channels[ channel_identifier ].transmitters ) do
 						if ( each_transmitter.entity.energy > 0 ) then
 							Get_transmitter_signals( current_channel_signal_table, each_transmitter )
@@ -116,6 +117,7 @@ local function onTick( event )
 			end
 		end
 
+		-- copy collected signals into receiver signals (parameters)
 		if ( signal_tables[ channel_identifier ] ~= nil and #signal_tables[ channel_identifier ] ~= 0 ) then
 			each_receiver.entity.get_control_behavior().parameters = { parameters = signal_tables[ channel_identifier ] }
 		end
