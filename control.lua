@@ -1,5 +1,4 @@
 require( "control-processing/channel-table-processing" )
-require( "control-processing/entity-table-processing" )
 require( "control-processing/receiver-table-processing" )
 require( "control-processing/transmitter-table-processing" )
 require( "control-processing/signal-processing" )
