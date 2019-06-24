@@ -1,7 +1,7 @@
 function Add_transmitter_to_channel_table( the_transmitter )
 	if ( global.jitemans_channeled_wireless_signals.channels[ the_transmitter.channel_identifier ] ~= nil ) then
 		-- add to existing channel
-		if ( global.jitemans_channeled_wireless_signals.channels[ the_transmitter.channel_identifier ].transmitters[ the_transmitter.unit_number ] == nil )
+		if ( global.jitemans_channeled_wireless_signals.channels[ the_transmitter.channel_identifier ].transmitters[ the_transmitter.unit_number ] == nil ) then
 			global.jitemans_channeled_wireless_signals.channels[ the_transmitter.channel_identifier ].transmitters[ the_transmitter.unit_number ] = the_transmitter
 		end
 	else
@@ -17,11 +17,11 @@ end
 function Remove_transmitter_from_channel_table( the_transmitter )
 	if ( global.jitemans_channeled_wireless_signals.channels[ the_transmitter.channel_identifier ] ~= nil ) then
 		-- add to existing channel
-		if ( global.jitemans_channeled_wireless_signals.channels[ the_transmitter.channel_identifier ].transmitters[ the_transmitter.unit_number ] ~= nil )
+		if ( global.jitemans_channeled_wireless_signals.channels[ the_transmitter.channel_identifier ].transmitters[ the_transmitter.unit_number ] ~= nil ) then
 			global.jitemans_channeled_wireless_signals.channels[ the_transmitter.channel_identifier ].transmitters[ the_transmitter.unit_number ] = nil
 		end
 		
-		if ( #global.jitemans_channeled_wireless_signals.channels[ the_transmitter.channel_identifier ].transmitters == 0 )
+		if ( #global.jitemans_channeled_wireless_signals.channels[ the_transmitter.channel_identifier ].transmitters == 0 ) then
 			global.jitemans_channeled_wireless_signals.channels[ the_transmitter.channel_identifier ] = nil
 		end
 	end
