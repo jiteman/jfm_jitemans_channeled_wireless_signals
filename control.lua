@@ -67,7 +67,7 @@ local function onEntityCreated( event )
 		Add_transmitter_to_transmitter_table( new_transmitter )
 		Add_transmitter_to_channel_table( new_transmitter )
 
-	elseif ( entity.name == "jitemans-channeled-signal-receiver" ) then
+	elseif ( the_entity.name == "jitemans-channeled-signal-receiver" ) then
 		the_entity.operable = false
 		
 		local new_receiver = {
