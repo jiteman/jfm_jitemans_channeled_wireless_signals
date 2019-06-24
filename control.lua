@@ -64,13 +64,9 @@ local function onEntityCreated( event )
 			channel_identifier = 0
 		}
 		
-		Add_transmitter_to_transmitter_table( new_transmitter );
-		Add_transmitter_to_channel_table( new_transmitter );
-		
-		--	global.jitemans_channeled_wireless_signals.channels[ 0 ] = {
-		--		name = "Default channel",
-		--		transmitters = { new_transmitter }
-		--	}
+		Add_transmitter_to_transmitter_table( new_transmitter )
+		Add_transmitter_to_channel_table( new_transmitter )
+
 	elseif ( entity.name == "jitemans-channeled-signal-receiver" ) then
 		the_entity.operable = false
 		
@@ -79,12 +75,8 @@ local function onEntityCreated( event )
 			channel_identifier = 0
 		}		
 		
-		table.insert(
-			global.jitemans_channeled_wireless_signals.receivers,
-			new_receiver
-		)
-		
-		Add_receiver_to_channel_table( new_receiver );
+		Add_receiver_to_receiver_table( new_receiver )
+		Add_receiver_to_channel_table( new_receiver )
 	end
 end
 
