@@ -61,7 +61,7 @@ local function onEntityCreated( event )
 		
 		local new_transmitter = {
 			entity = the_entity,
-			channel_identifier = 0
+			channel_identifier = "0"
 		}
 		
 		Add_transmitter_to_transmitter_table( new_transmitter )
@@ -72,10 +72,11 @@ local function onEntityCreated( event )
 		
 		local new_receiver = {
 			entity = the_entity,
-			channel_identifier = 0
+			channel_identifier = "0"
 		}		
 		
 		Add_receiver_to_receiver_table( new_receiver )
+		Add_receiver_to_channel_table( new_receiver )
 	end
 end
 
@@ -87,7 +88,8 @@ local function onEntityRemoved( event )
 		local the_transmitter = Remove_and_get_transmitter_from_transmitter_table( entity )
 		Remove_transmitter_from_channel_table( the_transmitter )
 	elseif ( entity.name == "jitemans-channeled-signal-receiver" ) then
-		Remove_receiver_from_receiver_table( entity )
+		local the_receiver = Remove_and_get_receiver_from_receiver_table( entity )
+		Remove_receiver_from_channel_table( the_receiver )
 	end
 end
 
@@ -142,17 +144,31 @@ local function open_gui( entity, player_index )
 	local gui = current_player.gui.center.add( { type = "frame", name = "jitemans_channeled_wireless_signals_gui", direction = "vertical" } )
 	current_player.opened = gui
 	global.jitemans_channeled_wireless_signals.gui = gui
+	
+	local channel_identifier_text = "[Unknown entity]"
+	local channel_name_text = "[No name]"
+	
+	if ( entity.name == "jitemans-channeled-signal-transmitter" ) then
+		local the_channel_identifier = global.jitemans_channeled_wireless_signals.transmitters[ entity.unit_number ].channel_identifier
+		channel_identifier_text = the_channel_identifier
+		channel_name_text = global.jitemans_channeled_wireless_signals.channels[ the_channel_identifier ].name
+	elseif ( entity.name == "jitemans-channeled-signal-receiver" ) then
+		local the_channel_identifier = global.jitemans_channeled_wireless_signals.receivers[ entity.unit_number ].channel_identifier
+		channel_identifier_text = the_channel_identifier
+		channel_name_text = global.jitemans_channeled_wireless_signals.channels[ the_channel_identifier ].name
+	end
 
-	gui.add( { type = "table", name = "title", column_count = 3 } )
-	gui.title.add( { type = "label", name = "entity_name", caption = { "entity-name." .. entity.name } } )
-	gui.title.add( { type = "label", name = "entity_at", caption =  "@" } )
-	gui.title.add( { type = "label", name = "entity_position", caption =  entity.position.x .. ", " .. entity.position.y } )
-	gui.add( { type = "table", name = "channel_number_selector", column_count = 2 } )
-	gui.channel_number_selector.add( { type = "slider", name = "channel_selector_slider", minimum_value = 0, maximum_value = 1, value = 0.5 } )
-	gui.channel_number_selector.add( { type = "textfield", name = "channel_selector_number", text = "0" } )
-	gui.add( { type = "table", name = "channel_name_selector", column_count = 2 } )
-	gui.channel_name_selector.add( { type = "label", name = "channel_name_caption", caption = "Channel name" } )
-	gui.channel_name_selector.add( { type = "textfield", name = "channel_name", text = "Unnamed channel" } )
+	gui.add( { type = "table", name = "title_section", column_count = 3 } )
+	gui.title_section.add( { type = "label", name = "entity_name", caption = { "entity-name." .. entity.name } } )
+	gui.title_section.add( { type = "label", name = "entity_at", caption =  "@" } )
+	gui.title_section.add( { type = "label", name = "entity_position", caption =  entity.position.x .. ", " .. entity.position.y } )
+	gui.add( { type = "table", name = "channel_identifier_section", column_count = 2 } )
+	gui.channel_identifier_section.add( { type = "label", name = "channel_identifier_caption", caption = "Channel identifier" } )
+	gui.channel_identifier_section.add( { type = "textfield", name = "channel_identifier", text = channel_identifier_text } )
+	gui.add( { type = "table", name = "channel_name_section", column_count = 2 } )
+	gui.channel_name_section.add( { type = "label", name = "channel_name_caption", caption = "Channel name" } )	
+	gui.channel_name_section.add( { type = "textfield", name = "channel_name", text = channel_name_text } )
+	
 	gui.add( { type = "button", name = "jitemans_channeled_wireless_signals_gui_close", caption = "Close" } )	
 end
 
@@ -191,19 +207,36 @@ end
 local function on_gui_value_changed( event )
 	local gui = global.jitemans_channeled_wireless_signals.gui
 	
-	if ( event.element.name == "channel_selector_slider" ) then
-		gui.channel_number_selector.channel_selector_number.text = math.ceil( event.element.slider_value * 1024 )
-	end
+--	if ( event.element.name == "channel_selector_slider" ) then
+--		gui.channel_number_selector.channel_selector_number.text = math.ceil( event.element.slider_value * 1024 )
+--	end
 end
 
 -- text is changed by the player
 local function on_gui_text_changed( event )
+	DEBUG_output( "[on_gui_text_changed( event )]" )
+	
 	local gui = global.jitemans_channeled_wireless_signals.gui
 	
-	if ( event.element.name == "channel_selector_number" ) then
---		DEBUG_output( gui.channel_number_selector.channel_selector_number.text )
-		local slider_value = tonumber( gui.channel_number_selector.channel_selector_number.text ) / 1024
-		gui.channel_number_selector.channel_selector_slider.value = slider_value
+	-- gui.channel_number_selector.channel_selector_number.text
+	if ( event.element.name == "channel_identifier" ) then
+		if ( gui.channel_identifier_section.channel_identifier.text ~= nil ) then
+			-- update channel identifier
+			
+		end
+	elseif ( event.element.name == "channel_name" ) then
+		DEBUG_output( "[on_gui_text_changed( event )] - 00100" )
+		if ( gui.channel_name_section.channel_name.text ~= nil ) then
+			DEBUG_output( "[on_gui_text_changed( event )] - 00200" )
+			-- update channel name
+			if ( gui.channel_identifier_section.channel_identifier.text ~= nil ) then
+				DEBUG_output( "[on_gui_text_changed( event )] - 00300" )
+				DEBUG_output( "[on_gui_text_changed( event )] - channel identifier text: " .. gui.channel_identifier_section.channel_identifier.text )
+				global.jitemans_channeled_wireless_signals.channels[ gui.channel_identifier_section.channel_identifier.text ].name = gui.channel_name_section.channel_name.text
+			end
+			DEBUG_output( "[on_gui_text_changed( event )] - 00400" )
+		end
+		DEBUG_output( "[on_gui_text_changed( event )] - 00500" )
 	end
 end
 
