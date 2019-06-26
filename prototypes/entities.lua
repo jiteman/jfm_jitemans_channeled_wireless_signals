@@ -60,7 +60,8 @@ local function createTransmitter( power )
 					green = { -0.13, 0.22 },
 				}
 			},
-			circuit_wire_max_distance = 15
+			circuit_wire_max_distance = 15,
+			additional_pastable_entities = { "jitemans-channeled-signal-transmitter", "jitemans-channeled-signal-receiver" }
 		}
 	} )
 end
@@ -158,7 +159,8 @@ local function createReceiver( power )
 					}
 				}
 			},
-			circuit_wire_max_distance = 15
+			circuit_wire_max_distance = 15,
+			additional_pastable_entities = { "jitemans-channeled-signal-receiver", "jitemans-channeled-signal-transmitter" }
 		}
 	})
 end

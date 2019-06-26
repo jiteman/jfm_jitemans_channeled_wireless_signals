@@ -51,10 +51,22 @@ local cachedSignal = {
 	}
 }
 
+local function is_transmitter( an_entity )
+	if ( an_entity == nil ) then return false end
+	
+	return an_entity.type == "lamp" and an_entity.name == "jitemans-channeled-signal-transmitter"
+end
+
+local function is_receiver( an_entity )
+	if ( an_entity == nil ) then return false end
+	
+	return an_entity.type == "constant-combinator" and an_entity.name == "jitemans-channeled-signal-receiver"
+end
+
 local function onEntityCreated( event )
 	local the_entity = event.created_entity
 
-	if ( the_entity.name == "jitemans-channeled-signal-transmitter" ) then
+	if ( is_transmitter( the_entity ) ) then
 		the_entity.operable = false
 		the_entity.get_or_create_control_behavior().connect_to_logistic_network = false
 		the_entity.get_control_behavior().circuit_condition = cachedSignal
@@ -66,8 +78,7 @@ local function onEntityCreated( event )
 
 		Add_transmitter_to_transmitter_table( new_transmitter )
 		Add_transmitter_to_channel_table( new_transmitter )
-
-	elseif ( the_entity.name == "jitemans-channeled-signal-receiver" ) then
+	elseif ( is_receiver( the_entity ) ) then
 		the_entity.operable = false
 
 		local new_receiver = {
@@ -81,14 +92,14 @@ local function onEntityCreated( event )
 end
 
 -- update channel table
-local function onEntityRemoved( event )
-	local entity = event.entity
+local function onEntityRemoved( an_event )
+	local the_entity = an_event.entity
 
-	if ( entity.name == "jitemans-channeled-signal-transmitter" ) then
-		local the_transmitter = Remove_and_get_transmitter_from_transmitter_table( entity )
+	if ( is_transmitter( the_entity ) ) then
+		local the_transmitter = Remove_and_get_transmitter_from_transmitter_table( the_entity )
 		Remove_transmitter_from_channel_table( the_transmitter )
-	elseif ( entity.name == "jitemans-channeled-signal-receiver" ) then
-		local the_receiver = Remove_and_get_receiver_from_receiver_table( entity )
+	elseif ( is_receiver( the_entity ) ) then
+		local the_receiver = Remove_and_get_receiver_from_receiver_table( the_entity )
 		Remove_receiver_from_channel_table( the_receiver )
 	end
 end
@@ -152,11 +163,11 @@ local function open_gui( entity, player_index )
 	local channel_identifier_text = "[Unknown entity]"
 	local channel_name_text = "[No name]"
 
-	if ( entity.name == "jitemans-channeled-signal-transmitter" ) then
+	if ( is_transmitter( entity ) ) then
 		local the_channel_identifier = global.jitemans_channeled_wireless_signals.transmitters[ entity.unit_number ].channel_identifier
 		channel_identifier_text = the_channel_identifier
 		channel_name_text = global.jitemans_channeled_wireless_signals.channels[ the_channel_identifier ].name
-	elseif ( entity.name == "jitemans-channeled-signal-receiver" ) then
+	elseif ( is_receiver( entity ) ) then
 		local the_channel_identifier = global.jitemans_channeled_wireless_signals.receivers[ entity.unit_number ].channel_identifier
 		channel_identifier_text = the_channel_identifier
 		channel_name_text = global.jitemans_channeled_wireless_signals.channels[ the_channel_identifier ].name
@@ -168,10 +179,15 @@ local function open_gui( entity, player_index )
 	gui.title_section.add( { type = "label", name = "entity_position", caption =  entity.position.x .. ", " .. entity.position.y } )
 	gui.add( { type = "table", name = "channel_identifier_section", column_count = 2 } )
 	gui.channel_identifier_section.add( { type = "label", name = "channel_identifier_caption", caption = "Channel identifier" } )
-	gui.channel_identifier_section.add( { type = "textfield", name = "channel_identifier", text = channel_identifier_text } )
+
+	local channel_identifier_text_field = gui.channel_identifier_section.add( { type = "textfield", name = "channel_identifier", text = channel_identifier_text } )
+	channel_identifier_text_field.style.width = 250
+
 	gui.add( { type = "table", name = "channel_name_section", column_count = 2 } )
 	gui.channel_name_section.add( { type = "label", name = "channel_name_caption", caption = "Channel name" } )
-	gui.channel_name_section.add( { type = "textfield", name = "channel_name", text = channel_name_text } )
+
+	local channel_name_text_field = gui.channel_name_section.add( { type = "textfield", name = "channel_name", text = channel_name_text } )
+	channel_name_text_field.style.width = 250 + 20
 
 	gui.add( { type = "button", name = "jitemans_channeled_wireless_signals_gui_close", caption = "Close" } )
 end
@@ -184,10 +200,11 @@ local function on_gui_opened( event )
 	local current_player = game.players[ current_player_index ]
 	local current_entity = current_player.selected
 
-	if ( current_entity ~= nil and current_player.can_reach_entity( current_entity ) ) then
-		if ( current_entity.type == "lamp" and current_entity.name == "jitemans-channeled-signal-transmitter" ) then
+--	if ( current_entity ~= nil and current_player.can_reach_entity( current_entity ) ) then
+	if ( current_entity ~= nil ) then
+		if ( is_transmitter( current_entity ) ) then
 			open_gui( current_entity, current_player_index )
-		elseif ( current_entity.type == "constant-combinator" and current_entity.name == "jitemans-channeled-signal-receiver" ) then
+		elseif ( is_receiver( current_entity ) ) then
 			open_gui( current_entity, current_player_index )
 		else
 			close_gui( current_player_index )
@@ -218,31 +235,24 @@ end
 
 -- text is changed by the player
 local function on_gui_text_changed( event )
---	DEBUG_output( "[on_gui_text_changed( event )]" )
-
 	local gui = global.jitemans_channeled_wireless_signals.gui
 
-	-- gui.channel_number_selector.channel_selector_number.text
+	
 	if ( event.element.name == "channel_identifier" ) then
---		DEBUG_output( "[on_gui_text_changed( event )] - 00100" )
 		if ( gui.channel_identifier_section.channel_identifier.text ~= nil ) then
---			DEBUG_output( "[on_gui_text_changed( event )] - 00200" )
 			-- update channel identifier
 			local current_entity = local_current_entity
 
 			if ( current_entity ~= nil ) then
 				local current_channel_name_text = gui.channel_name_section.channel_name.text
 
---				DEBUG_output( "[on_gui_text_changed( event )] - 00300" )
-				if ( current_entity.type == "lamp" and current_entity.name == "jitemans-channeled-signal-transmitter" ) then
---					DEBUG_output( "[on_gui_text_changed( event )] - 00400" )
+				if ( is_transmitter( current_entity ) ) then
 					local current_transmitter = global.jitemans_channeled_wireless_signals.transmitters[ current_entity.unit_number ]
 					Remove_transmitter_from_channel_table( current_transmitter )
 					current_transmitter.channel_identifier = gui.channel_identifier_section.channel_identifier.text
 					Add_transmitter_to_channel_table( current_transmitter )
 					current_channel_name_text = global.jitemans_channeled_wireless_signals.channels[ current_transmitter.channel_identifier ].name
-				elseif ( current_entity.type == "constant-combinator" and current_entity.name == "jitemans-channeled-signal-receiver" ) then
---					DEBUG_output( "[on_gui_text_changed( event )] - 00500" )
+				elseif ( is_receiver( current_entity ) ) then
 					local current_receiver = global.jitemans_channeled_wireless_signals.receivers[ current_entity.unit_number ]
 					Remove_receiver_from_channel_table( current_receiver )
 					current_receiver.channel_identifier = gui.channel_identifier_section.channel_identifier.text
@@ -251,11 +261,8 @@ local function on_gui_text_changed( event )
 				end
 
 				gui.channel_name_section.channel_name.text = current_channel_name_text
---				DEBUG_output( "[on_gui_text_changed( event )] - 00600" )
 			end
---			DEBUG_output( "[on_gui_text_changed( event )] - 00700" )
 		end
---		DEBUG_output( "[on_gui_text_changed( event )] - 00800" )
 	elseif ( event.element.name == "channel_name" ) then
 		if ( gui.channel_name_section.channel_name.text ~= nil ) then
 			-- update channel name
@@ -284,6 +291,50 @@ local function on_gui_closed( event )
 	close_gui( event.player_index )
 end
 
+local function on_entity_settings_pasted( an_event )
+	local source_entity = an_event.source_entity
+	local destination_entity = an_event.destination
+	
+	DEBUG_output( "[on_entity_settings_pasted( an_event ) - 00100]" )
+	if ( source_entity ~= nil and destination_entity ~= nil ) then -- both are not nil
+		DEBUG_output( "[on_entity_settings_pasted( an_event ) - 00200]" )
+		if ( source_entity.unit_number ~= destination_entity.unit_number ) then -- not the same entities
+			DEBUG_output( "[on_entity_settings_pasted( an_event ) - 00300]" )
+			local source_entity_channel_identifier = nil
+			
+			if ( is_transmitter( source_entity ) ) then
+				DEBUG_output( "[on_entity_settings_pasted( an_event ) - 00400]" )
+				source_entity_channel_identifier = global.jitemans_channeled_wireless_signals.transmitters[ source_entity.unit_number ].channel_identifier
+			elseif ( is_receiver( source_entity ) ) then
+				DEBUG_output( "[on_entity_settings_pasted( an_event ) - 00500]" )
+				source_entity_channel_identifier = global.jitemans_channeled_wireless_signals.receivers[ source_entity.unit_number ].channel_identifier
+			end
+			
+			DEBUG_output( "[on_entity_settings_pasted( an_event ) - 00600]" )
+			
+			if ( source_entity_channel_identifier ~= nil ) then
+				DEBUG_output( "[on_entity_settings_pasted( an_event ) - 00700]" )
+				if ( is_transmitter( destination_entity ) ) then
+					DEBUG_output( "[on_entity_settings_pasted( an_event ) - 00800]" )
+					local destination_transmitter = global.jitemans_channeled_wireless_signals.transmitters[ destination_entity.unit_number ]
+					Remove_transmitter_from_channel_table( destination_transmitter )
+					destination_transmitter.channel_identifier = source_entity_channel_identifier
+					Add_transmitter_to_channel_table( destination_transmitter )					
+				elseif ( is_receiver( destination_entity ) ) then
+					DEBUG_output( "[on_entity_settings_pasted( an_event ) - 00900]" )
+					local destination_receiver = global.jitemans_channeled_wireless_signals.receivers[ current_entity.unit_number ]
+					Remove_receiver_from_channel_table( destination_receiver )
+					destination_receiver.channel_identifier = source_entity_channel_identifier
+					Add_receiver_to_channel_table( destination_receiver )
+				end
+				DEBUG_output( "[on_entity_settings_pasted( an_event ) - 01000]" )
+			end
+			DEBUG_output( "[on_entity_settings_pasted( an_event ) - 01100]" )
+		end
+		DEBUG_output( "[on_entity_settings_pasted( an_event ) - 01200]" )
+	end
+	DEBUG_output( "[on_entity_settings_pasted( an_event ) - 01300]" )
+end
 script.on_event( defines.events.on_built_entity, onEntityCreated )
 script.on_event( defines.events.on_robot_built_entity, onEntityCreated )
 
@@ -301,3 +352,4 @@ script.on_event( defines.events.on_gui_text_changed, on_gui_text_changed )
 script.on_event( defines.events.on_gui_elem_changed, on_gui_elem_changed )
 script.on_event( defines.events.on_gui_click, on_gui_click )
 script.on_event( defines.events.on_gui_closed, on_gui_closed )
+script.on_event( defines.events.on_entity_settings_pasted, on_entity_settings_pasted )
