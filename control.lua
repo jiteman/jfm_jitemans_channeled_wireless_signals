@@ -295,45 +295,45 @@ local function on_entity_settings_pasted( an_event )
 	local source_entity = an_event.source_entity
 	local destination_entity = an_event.destination
 	
-	DEBUG_output( "[on_entity_settings_pasted( an_event ) - 00100]" )
+--	DEBUG_output( "[on_entity_settings_pasted( an_event ) - 00100]" )
 	if ( source_entity ~= nil and destination_entity ~= nil ) then -- both are not nil
-		DEBUG_output( "[on_entity_settings_pasted( an_event ) - 00200]" )
+--		DEBUG_output( "[on_entity_settings_pasted( an_event ) - 00200]" )
 		if ( source_entity.unit_number ~= destination_entity.unit_number ) then -- not the same entities
-			DEBUG_output( "[on_entity_settings_pasted( an_event ) - 00300]" )
+--			DEBUG_output( "[on_entity_settings_pasted( an_event ) - 00300]" )
 			local source_entity_channel_identifier = nil
 			
 			if ( is_transmitter( source_entity ) ) then
-				DEBUG_output( "[on_entity_settings_pasted( an_event ) - 00400]" )
+--				DEBUG_output( "[on_entity_settings_pasted( an_event ) - 00400]" )
 				source_entity_channel_identifier = global.jitemans_channeled_wireless_signals.transmitters[ source_entity.unit_number ].channel_identifier
 			elseif ( is_receiver( source_entity ) ) then
-				DEBUG_output( "[on_entity_settings_pasted( an_event ) - 00500]" )
+--				DEBUG_output( "[on_entity_settings_pasted( an_event ) - 00500]" )
 				source_entity_channel_identifier = global.jitemans_channeled_wireless_signals.receivers[ source_entity.unit_number ].channel_identifier
 			end
 			
-			DEBUG_output( "[on_entity_settings_pasted( an_event ) - 00600]" )
+--			DEBUG_output( "[on_entity_settings_pasted( an_event ) - 00600]" )
 			
 			if ( source_entity_channel_identifier ~= nil ) then
-				DEBUG_output( "[on_entity_settings_pasted( an_event ) - 00700]" )
+--				DEBUG_output( "[on_entity_settings_pasted( an_event ) - 00700]" )
 				if ( is_transmitter( destination_entity ) ) then
-					DEBUG_output( "[on_entity_settings_pasted( an_event ) - 00800]" )
+--					DEBUG_output( "[on_entity_settings_pasted( an_event ) - 00800]" )
 					local destination_transmitter = global.jitemans_channeled_wireless_signals.transmitters[ destination_entity.unit_number ]
 					Remove_transmitter_from_channel_table( destination_transmitter )
 					destination_transmitter.channel_identifier = source_entity_channel_identifier
 					Add_transmitter_to_channel_table( destination_transmitter )					
 				elseif ( is_receiver( destination_entity ) ) then
-					DEBUG_output( "[on_entity_settings_pasted( an_event ) - 00900]" )
+--					DEBUG_output( "[on_entity_settings_pasted( an_event ) - 00900]" )
 					local destination_receiver = global.jitemans_channeled_wireless_signals.receivers[ current_entity.unit_number ]
 					Remove_receiver_from_channel_table( destination_receiver )
 					destination_receiver.channel_identifier = source_entity_channel_identifier
 					Add_receiver_to_channel_table( destination_receiver )
 				end
-				DEBUG_output( "[on_entity_settings_pasted( an_event ) - 01000]" )
+--				DEBUG_output( "[on_entity_settings_pasted( an_event ) - 01000]" )
 			end
-			DEBUG_output( "[on_entity_settings_pasted( an_event ) - 01100]" )
+--			DEBUG_output( "[on_entity_settings_pasted( an_event ) - 01100]" )
 		end
-		DEBUG_output( "[on_entity_settings_pasted( an_event ) - 01200]" )
+--		DEBUG_output( "[on_entity_settings_pasted( an_event ) - 01200]" )
 	end
-	DEBUG_output( "[on_entity_settings_pasted( an_event ) - 01300]" )
+--	DEBUG_output( "[on_entity_settings_pasted( an_event ) - 01300]" )
 end
 script.on_event( defines.events.on_built_entity, onEntityCreated )
 script.on_event( defines.events.on_robot_built_entity, onEntityCreated )

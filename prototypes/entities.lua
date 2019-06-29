@@ -61,6 +61,7 @@ local function createTransmitter( power )
 				}
 			},
 			circuit_wire_max_distance = 15,
+			allow_copy_paste = true,
 			additional_pastable_entities = { "jitemans-channeled-signal-transmitter", "jitemans-channeled-signal-receiver" }
 		}
 	} )
@@ -160,6 +161,7 @@ local function createReceiver( power )
 				}
 			},
 			circuit_wire_max_distance = 15,
+			allow_copy_paste = true,
 			additional_pastable_entities = { "jitemans-channeled-signal-receiver", "jitemans-channeled-signal-transmitter" }
 		}
 	})
